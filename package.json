@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/lakshdang/BidUp#readme",
   "dependencies": {
-    "express": "latest"
+    "cricapi": "^1.2.9",
+    "express": "latest",
+    "axios": "latest"
   }
 }
