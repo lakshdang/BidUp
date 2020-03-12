@@ -17,8 +17,18 @@
   },
   "homepage": "https://github.com/lakshdang/BidUp#readme",
   "dependencies": {
+    "ejs": "latest",
+    "morgan": "latest",
+    "cookie-parser": "latest",
+    "express-session": "latest",
+    "request": "latest",
+    "passport": "latest",
+    "connect-flash": "latest",
+    "passport-google-oauth": "latest",
+    "body-parser": "latest",
+    "axios": "latest",
     "cricapi": "^1.2.9",
     "express": "latest",
-    "axios": "latest"
+    "mysql": "^2.18.1"
   }
 }

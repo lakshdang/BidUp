@@ -1,8 +1,19 @@
 var cricapi = require("cricapi");
 var axios = require('axios').default;
 var util = require('util')
+var mysql = require('mysql')
 
+var connection = mysql.createConnection({
+  host     : 'bidupdb.chojw49vb0kf.us-east-2.rds.amazonaws.com',
+  user     : 'admin',
+  password : 'PassMYSQL',
+  database: 'BidUpData',
+  multipleStatements: true
+});
 
+// qeury = "Select * from SeriesSquads join Players on SeriesSquads.PlayerID = Players.PlayerID"
+// connection.connect()
+// connection.qeury(qeury, function(err))
 //get list of all matches
 // optional parameters to limit number of upcoming, in progress and coompleted match counts
 // axios({
@@ -26,7 +37,7 @@ var util = require('util')
 //       console.log(error)
 //     })
 
-//get list of series. Contains some completed and future and in progress series
+// get list of series. Contains some completed and future and in progress series
 // axios({
 //     "method":"GET",
 //     "url":"https://dev132-cricket-live-scores-v1.p.rapidapi.com/series.php",
@@ -37,13 +48,27 @@ var util = require('util')
 //     }
 //     })
 //     .then((response)=>{
-//       console.log(util.inspect(response.data, false, null, true /* enable colors */))
+//         series = response.data['seriesList']['series'].filter(series=>(series['status']=='UPCOMING'))
+//         insertVals = []
+//         // series = response.data['seriesList']['series']
+//         for(i=0; i<series.length; i++)insertVals.push([series[i]["id"], series[i]["name"], (new Date(series[i]["startDateTime"])).toISOString().split('T')[0], (new Date(series[i]["endDateTime"])).toISOString().split('T')[0]])
+//         // for(i=0; i<series.length; i++)series[i] = series[i]['id']
+//         // series.sort()
+//         // connection.connect();
+ 
+//         // connection.query('INSERT INTO Series (SeriesApiID, SeriesName, SeriesStartDate, SeriesEndDate) VALUES ?', [insertVals], function (error, results, fields) {
+//         //   if(error) throw error;
+//         //   console.log(results);
+//         // });
+         
+//         // connection.end();
+//       console.log(util.inspect(insertVals.length, false, null, true /* enable colors */))
 //     })
 //     .catch((error)=>{
 //       console.log(error)
 //     })
 
-// get list of teams participating in a series. ONly gets names of teams and team ID. 
+// get list of teams participating in a series. Only gets names of teams and team ID. 
 // required paramter of series ID which can be got from get series request.
 // axios({
 //     "method":"GET",
@@ -53,11 +78,31 @@ var util = require('util')
 //     "x-rapidapi-host":"dev132-cricket-live-scores-v1.p.rapidapi.com",
 //     "x-rapidapi-key":"c141b2a916msh18ae88f0acdc9c5p194fc5jsn6e88ffc076c2"
 //     },"params":{
-//     "seriesid":"2382"
+//     "seriesid":"2348"
 //     }
 //     })
 //     .then((response)=>{
-//       console.log(util.inspect(response.data, false, null, true /* enable colors */))
+//         teams = response.data['seriesTeams']['teams']
+//         insertVals=[]
+//         for(i=0; i<teams.length; i++)insertVals.push(teams[i]["id"])
+//         connection.connect();
+ 
+//         connection.query('SELECT * FROM Teams WHERE TeamApiID in (?); Select * from Series where SeriesApiID=?', [insertVals, 2348], function (error, results, fields) {
+//             if(error)throw error;
+
+//             insertVals=[];
+//             for(i=0; i<results[0].length; i++){insertVals.push([results[0][i]["TeamID"], results[1][0]["SeriesID"]])}
+//             console.log(insertVals)
+//             // console.log(TeamResults)
+//             connection.query('INSERT into SeriesTeams (TeamID, SeriesID) VALUES ?', [insertVals], function(error, results, fields){
+//                 if(error)throw error;
+//                 console.log(results)
+//                 connection.end();
+//             })
+
+//         });
+//         // console.log(util.inspect(teams, false, null, true /* enable colors */))
+//         // console.log(util.inspect(response.data, false, null, true /* enable colors */))
 //     })
 //     .catch((error)=>{
 //       console.log(error)
@@ -97,10 +142,28 @@ axios({
     }
     })
     .then((response)=>{
-      console.log(util.inspect(response.data, false, null, true /* enable colors */))
+        // console.log(util.inspect(response.data, false, null, true /* enable colors */))
+        players = response.data["teamPlayers"]["players"]
+        playerIds = []
+        for(i=0; i<players.length; i++)playerIds.push(players[i]["playerId"]);
+        // console.log(playerIds)
+        // console.log(players)
+        connection.connect()
+        connection.query('Select PlayerId from Players where PlayerApiID in (?); SELECT SeriesTeamID from SeriesTeams WHERE SeriesId=? AND TeamID=?', [playerIds, 1, 2], function(error, results, fields){
+            if(error)throw error;
+            insertVals = []
+            for(i=0; i<results[0].length; i++)insertVals.push([results[1][0]['SeriesTeamID'], results[0][i]['PlayerId']])
+            // console.log(insertVals)
+            connection.query('INSERT INTO SeriesSquads (SeriesTeamId, PlayerId) VALUES ?', [insertVals], function(error, results, fields){
+                if(error)throw error;
+                console.log(results)
+            })
+            connection.end()
+        })
+
     })
     .catch((error)=>{
-      console.log(error)
+        console.log(error)
     })
 
 //get matches seriesID
@@ -112,7 +175,7 @@ axios({
 //     "x-rapidapi-host":"dev132-cricket-live-scores-v1.p.rapidapi.com",
 //     "x-rapidapi-key":"c141b2a916msh18ae88f0acdc9c5p194fc5jsn6e88ffc076c2"
 //     },"params":{
-//     "seriesid":"2141"
+//     "seriesid":"2348"
 //     }
 //     })
 //     .then((response)=>{
