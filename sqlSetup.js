@@ -8,9 +8,9 @@ var connection = mysql.createConnection({
 
 connection.connect();
  
-connection.query('SELECT * from Series', function (error, results, fields) {
+connection.query('SELECT * from Series', function (error, results, fields){
   if (error) throw error;
   console.log(results);
 });
- 
+
 connection.end();

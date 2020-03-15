@@ -1,27 +1,19 @@
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 var configAuth = require('./auth');
-// var axios = require('axios').default;
-// var pythonConnect = require('./pythonConnect');
 
-module.exports = function(passport){
+module.exports = function(passport, pool){
 
 	passport.serializeUser(function(user, done){
-		done(null, user.id);
+		console.log(user)
+		done(null, user.userId);
 	});
 
-	passport.deserializeUser(function(id, done){
-		done(null, {"id": id})
-		user = {"id": id}
-		// pythonConnect.postRequest('/getUser', {'googleProfileID': id}, function(error, result){
-		// 	if(error)
-		// 		done(error, null)
-			
-		// 	curr_user = JSON.parse(result.data['user'])[0]
-		// 	if(curr_user==false)
-		// 		done(null, false)
-			
-		// 	done(null, curr_user)
-		// })
+	passport.deserializeUser(function(userId, done){
+		pool.query('SELECT * FROM Users WHERE userID=?', [userId], function(error, results, fields){
+			if(error)throw error
+			if(results.length==0)return done(null, false);
+			return done(null, results[0])
+		})
 	});
 
 	passport.use(new GoogleStrategy({
@@ -31,18 +23,24 @@ module.exports = function(passport){
 	  },
 	  function(accessToken, refreshToken, profile, done){
 	    	process.nextTick(function(){
-	    		user = {"id": profile.id};
-				data = {userProfile: profile}
-				return done(null, user)
-				// pythonConnect.postRequest('/authenticateUser', data, function(error, result){
-				// 	if(error)
-				// 		return done(error)
-				// 	else{
-				// 		if(!result.data.authorizedUser)
-				// 			return done(null, false);
-				// 		return done(null, profile);
-				// 	}
-				// });
+	    		user = {"userId": null};
+				email = profile['_json']['email']
+				pool.query('SELECT * FROM Users WHERE email=?', [email], function(error, results, fields){
+					if(error) return done(error);
+					if(results.length==0)return done(null, false);
+					userId = results[0]['UserID']
+					user["userId"] = userId
+					if(results[0]['Verified']==0){
+						firstName = profile['_json']['given_name']
+						lastName = profile['_json']['family_name']
+						pool.query('UPDATE Users SET FirstName=?, LastName=?, Verified=? WHERE UserID=?', [firstName, lastName, true, userId], function(error, updateResults, fields){
+							if(error) return done(error);
+							return done(null, user)
+						})
+					}
+					else
+						return done(null, user)
+				})
 	    	});
 	    })
 	);
