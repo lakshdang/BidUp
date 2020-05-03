@@ -1,0 +1,43 @@
+<!-- views/pages/index.ejs -->
+<!doctype html>
+<html>
+	<head>
+		<title>BidUp</title>
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+		<style>
+			body 		{ padding-top:80px; word-wrap:break-word; }
+		</style>
+		<script src="/socket.io/socket.io.js"></script>
+	</head>
+	<body>
+		<div class="container">
+			<header>
+			    <%- include ('navbar.ejs') %>
+			</header>
+			<div class="row">
+
+		        <!-- User Info -->
+		        <div class="col-sm-12">
+		            <div class="well">
+		                <h3 class="text-danger"><span></span> Welcome <%= user.FirstName%>!</h3>
+		            </div>
+		        </div>
+
+			</div>
+		</div>
+	<script>
+		const socket = io();
+
+		socket.on('connect', function(){
+			console.log("connected to server");
+			socket.emit('testEvent',{"message": "TestMessage"})
+		});
+
+		socket.on('disconnect', function() {
+			console.log('disconnected from server.');
+		});
+
+	</script>
+	</body>
+</html>

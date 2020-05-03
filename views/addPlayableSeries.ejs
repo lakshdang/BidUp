@@ -1,0 +1,45 @@
+<!-- views/addUser.ejs -->
+<!doctype html>
+<html>
+	<head>
+		<title>Add Playable Series</title>
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+		<style>
+			body 		{ padding-top:80px; word-wrap:break-word; }
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<header>
+			    <%- include ('navbar.ejs') %>
+			</header>
+			<div class="row">
+		        <div class="col-sm-6">
+		        	<!-- show any messages -->
+					<% if (message != undefined) { %>
+						<div class="alert alert-danger"><%= message %></div>
+					<% } %>
+		            <form method="post" action="/addPlayableSeries">
+						<select id="SeriesList" name="Series" required>
+	            			<option disabled selected value> -- Select Series -- </option>
+	            			<% for(var i=0; i < series.length; i++) { %>
+								<option value="<%= series[i]['SeriesID']%>"><%= series[i]['SeriesName']%></option>
+							<% } %>
+	            		</select><br>
+						<input type="submit">
+		            </form>
+		        </div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			function validateForm(){
+				checkboxes = document.getElementsByClassName("seriesList");
+				count=0;
+				for(var i=0; i<checkboxes.length; i++)if(checkboxes[i].checked)count++;
+				if(count==0)alert('Please select atleast one series')
+				return count>0
+			}
+		</script>
+	</body>
+</html>

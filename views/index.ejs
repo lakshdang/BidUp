@@ -1,0 +1,33 @@
+<!-- views/index.ejs -->
+<!doctype html>
+<html>
+<head>
+	<title>Welcome to BidUp</title>
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+	<style>
+		body 		{ padding-top:80px; }
+	</style>
+	<script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+<div class="container">
+
+	<div class="jumbotron text-center">
+		<h1><span class="fa fa-lock"></span> BidUp</h1>
+
+		<p>Login or Register with:</p>
+		<a href="/auth/google" class="btn btn-danger"><span class="fa fa-google-plus"></span> Google</a>
+	</div>
+	<script>
+		const socket = io();
+		socket.on('connect', function(){
+			console.log("Connected to server")
+		});
+		socket.on('disconnect', function() {
+			console.log('Disconnected from server.');
+		});
+	</script>
+</div>
+</body>
+</html>
