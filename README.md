@@ -1,2 +1,0 @@
-# BidUp
-Fantasy Auction App
