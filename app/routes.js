@@ -1,5 +1,9 @@
+var util = require('util')
+
 module.exports = function(app, passport, pool){
 	userLogic = require('./userLogic')(pool)
+	seriesLogic = require('./seriesLogic')(pool)
+	leagueLogic= require('./leagueLogic')(pool)
 
 	app.get('/', function(req, res){
 		res.render('index.ejs')
@@ -34,7 +38,57 @@ module.exports = function(app, passport, pool){
 	})
 
 	app.get('/createLeague', isLoggedIn, function(req, res){
-		res.send('Add League Page')
+		flashMessage = (req.flash('flashMessage')[0]);
+		seriesLogic.getPlayableSeries(function(error, results){
+			if(error)throw error;
+			res.render('./createLeague.ejs', {user: req.user, message: flashMessage, series: results})
+		})			
+	})
+
+	app.post('/createLeague', isLoggedIn, function(req, res){
+		leagueLogic.createLeague(req.body, req.user, function(error, result){
+			if(error)return res.send(error);
+			req.flash('flashMessage', 'League created!')
+			res.redirect('/createLeague')
+		})
+	})
+
+	app.get('/addPlayableSeries', isAdmin, function(req, res){
+		flashMessage = (req.flash('flashMessage')[0]);
+		seriesLogic.getUnplayableSeries(function(error, results){
+			if(error)res.send(error);
+			res.render('addPlayableSeries.ejs', {user: req.user, message: flashMessage, series: results})
+		})
+	})
+
+	app.post('/joinLeague', isLoggedIn, function(req, res){
+		leagueLogic.joinLeague(req.body, req.user, function(error, result){
+			if(error)res.send(error);
+			if(!result)req.flash('flashMessage', 'Cannot Join League');
+			else req.flash('flashMessage', 'League Joined');
+			res.redirect('/createLeague')
+		})	
+	})
+
+	app.post('/addPlayableSeries', isAdmin, function(req, res){
+		seriesLogic.addPlayableSeries(req.body.Series, function(error, result){
+			if(error)req.flash('flashMessage', 'Error Adding Series');
+			else req.flash('flashMessage', 'Series added to playable list')
+			res.redirect('/addPlayableSeries')
+		})
+	})
+
+	app.get('/userLeagues', isLoggedIn, function(req, res){
+		flashMessage = (req.flash('flashMessage')[0]);
+		leagueLogic.getUserLeagues(req.user, function(error, results){
+			if(error)return res.send(error);
+			console.log(results)
+			return res.render('userLeagues.ejs', {user: req.user, message: flashMessage, userLeagues: results})
+		})
+	})
+
+	app.get('/leaguePage', isLoggedIn, function(req, res){
+		res.render('leaguePage.ejs', {user: req.user});
 	})
 }
 

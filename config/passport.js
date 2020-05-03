@@ -4,7 +4,6 @@ var configAuth = require('./auth');
 module.exports = function(passport, pool){
 
 	passport.serializeUser(function(user, done){
-		console.log(user)
 		done(null, user.userId);
 	});
 

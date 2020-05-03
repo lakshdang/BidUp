@@ -9,5 +9,6 @@ module.exports = {
 		'user': 'admin',
 		'password': 'PassMYSQL',
 		'database': 'BidUpData',
+		'multipleStatements': true
 	}
 }

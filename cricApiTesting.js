@@ -11,6 +11,16 @@ var connection = mysql.createConnection({
   multipleStatements: true
 });
 
+function isNormalInteger(str){
+	var n = Math.floor(Number(str));
+	return n !== Infinity && String(n) === str && n >= 0;
+}
+console.log(isNormalInteger("-1"))
+console.log(isNormalInteger("2"))
+console.log(isNormalInteger("2.1"))
+console.log(isNormalInteger("10E2"))
+console.log(isNormalInteger("+10"))
+console.log(isNormalInteger("11.0"))
 // qeury = "Select * from SeriesSquads join Players on SeriesSquads.PlayerID = Players.PlayerID"
 // connection.connect()
 // connection.qeury(qeury, function(err))
@@ -37,7 +47,7 @@ var connection = mysql.createConnection({
 //       console.log(error)
 //     })
 
-// get list of series. Contains some completed and future and in progress series
+// get list of series. Contains completed, future and in progress series
 // axios({
 //     "method":"GET",
 //     "url":"https://dev132-cricket-live-scores-v1.p.rapidapi.com/series.php",
@@ -54,15 +64,16 @@ var connection = mysql.createConnection({
 //         for(i=0; i<series.length; i++)insertVals.push([series[i]["id"], series[i]["name"], (new Date(series[i]["startDateTime"])).toISOString().split('T')[0], (new Date(series[i]["endDateTime"])).toISOString().split('T')[0]])
 //         // for(i=0; i<series.length; i++)series[i] = series[i]['id']
 //         // series.sort()
-//         // connection.connect();
+//         connection.connect();
  
-//         // connection.query('INSERT INTO Series (SeriesApiID, SeriesName, SeriesStartDate, SeriesEndDate) VALUES ?', [insertVals], function (error, results, fields) {
-//         //   if(error) throw error;
-//         //   console.log(results);
-//         // });
+//         connection.query('INSERT INTO Series (SeriesApiID, SeriesName, SeriesStartDate, SeriesEndDate) VALUES ?', [insertVals], function (error, results, fields) {
+//           if(error) throw error;
+//           console.log(results);
+//         });
          
-//         // connection.end();
-//       console.log(util.inspect(insertVals.length, false, null, true /* enable colors */))
+//         connection.end();
+//       // console.log(util.inspect(insertVals.length, false, null, true /* enable colors */))
+//       // console.log(util.inspect(series, false, null, true /* enable colors */))
 //     })
 //     .catch((error)=>{
 //       console.log(error)
@@ -109,7 +120,7 @@ var connection = mysql.createConnection({
 //     })
 
 
-//get list of teams(same as above but for ipl 2018)
+// get list of teams(same as above but for ipl 2018)
 // axios({
 //     "method":"GET",
 //     "url":"https://dev132-cricket-live-scores-v1.p.rapidapi.com/seriesteams.php",
@@ -118,7 +129,7 @@ var connection = mysql.createConnection({
 //     "x-rapidapi-host":"dev132-cricket-live-scores-v1.p.rapidapi.com",
 //     "x-rapidapi-key":"c141b2a916msh18ae88f0acdc9c5p194fc5jsn6e88ffc076c2"
 //     },"params":{
-//     "seriesid":"2141"
+//     "seriesid":"2429"
 //     }
 //     })
 //     .then((response)=>{
@@ -129,42 +140,24 @@ var connection = mysql.createConnection({
 //     })
 
 // get a teams squad
-// required parameter: team ID that can be got from series team request. Here for mumbai indians
-axios({
-    "method":"GET",
-    "url":"https://dev132-cricket-live-scores-v1.p.rapidapi.com/playersbyteam.php",
-    "headers":{
-    "content-type":"application/octet-stream",
-    "x-rapidapi-host":"dev132-cricket-live-scores-v1.p.rapidapi.com",
-    "x-rapidapi-key":"c141b2a916msh18ae88f0acdc9c5p194fc5jsn6e88ffc076c2"
-    },"params":{
-    "teamid":"4"
-    }
-    })
-    .then((response)=>{
-        // console.log(util.inspect(response.data, false, null, true /* enable colors */))
-        players = response.data["teamPlayers"]["players"]
-        playerIds = []
-        for(i=0; i<players.length; i++)playerIds.push(players[i]["playerId"]);
-        // console.log(playerIds)
-        // console.log(players)
-        connection.connect()
-        connection.query('Select PlayerId from Players where PlayerApiID in (?); SELECT SeriesTeamID from SeriesTeams WHERE SeriesId=? AND TeamID=?', [playerIds, 1, 2], function(error, results, fields){
-            if(error)throw error;
-            insertVals = []
-            for(i=0; i<results[0].length; i++)insertVals.push([results[1][0]['SeriesTeamID'], results[0][i]['PlayerId']])
-            // console.log(insertVals)
-            connection.query('INSERT INTO SeriesSquads (SeriesTeamId, PlayerId) VALUES ?', [insertVals], function(error, results, fields){
-                if(error)throw error;
-                console.log(results)
-            })
-            connection.end()
-        })
-
-    })
-    .catch((error)=>{
-        console.log(error)
-    })
+// required parameter: team ID that can be got from series team request.
+// axios({
+//     "method":"GET",
+//     "url":"https://dev132-cricket-live-scores-v1.p.rapidapi.com/playersbyteam.php",
+//     "headers":{
+//     "content-type":"application/octet-stream",
+//     "x-rapidapi-host":"dev132-cricket-live-scores-v1.p.rapidapi.com",
+//     "x-rapidapi-key":"c141b2a916msh18ae88f0acdc9c5p194fc5jsn6e88ffc076c2"
+//     },"params":{
+//     "teamid":"4"
+//     }
+//     })
+//     .then((response)=>{
+//       console.log(response)
+//     })
+//     .catch((error)=>{
+//       console.log(error)
+//     })
 
 //get matches seriesID
 // axios({

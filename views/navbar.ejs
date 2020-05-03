@@ -6,11 +6,19 @@
 				<li><a href="/home">Home</a></li>
 			</ul>
 			<ul class="nav navbar-nav">
-				<li><a href="/createLeague">Create New League</a></li>
+				<li><a href="/createLeague">Create or Join a League</a></li>
+			</ul>
+			<ul class="nav navbar-nav">
+				<li><a href="/userLeagues">My Leagues</a></li>
 			</ul>
 			<% if(user.Admin==1){ %>
 				<ul class="nav navbar-nav">
 					<li><a href="/addUser">Add User</a></li>
+				</ul>
+			<% } %>
+			<% if(user.Admin==1){ %>
+				<ul class="nav navbar-nav">
+					<li><a href="/addPlayableSeries">Add Playable Series</a></li>
 				</ul>
 			<% } %>
 	    </div>

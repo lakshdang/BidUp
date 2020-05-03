@@ -1,0 +1,53 @@
+<!-- views/createLeague.ejs -->
+<!doctype html>
+<html>
+	<head>
+		<title>Create New League</title>
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+		<style>
+			body 		{ padding-top:80px; word-wrap:break-word; }
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<header>
+				<%- include ('navbar.ejs') %>
+			</header>
+			<div class="row">
+				<!-- User Info -->
+				<div class="col-sm-12 well">
+					<!-- show any messages -->
+					<% if (message != undefined) { %>
+						<div class="alert alert-danger"><%= message %></div>
+					<% } %>
+					<table>
+						<tr>
+							<th>League Name</th>
+							<th>League Series</th>
+							<th>Edit League</th>
+						</tr>
+						<% for (var i=0; i < userLeagues.length; i++){ %>
+							<tr>
+								<td> <%= userLeagues[i]['LeagueName'] %> </td>
+								<td> <%= userLeagues[i]['SeriesName'] %> </td>
+								<% if(userLeagues[i]['LeagueAdminUserID'] == user['UserID']){ %>
+									<td>Edit League</td>
+								<% } %>
+							</tr>
+						<% } %>
+					</table>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			function validateNewLeagueForm(){
+			}
+
+			function isNormalInteger(str){
+				var n = Math.floor(Number(str));
+				return n !== Infinity && String(n) === str && n >= 0;
+			}
+		</script>
+	</body>
+</html>
