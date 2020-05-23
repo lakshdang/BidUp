@@ -1,11 +1,12 @@
 var util = require('util')
 
 module.exports = function(app, passport, pool){
-	userLogic = require('./userLogic')(pool)
-	seriesLogic = require('./seriesLogic')(pool)
-	leagueLogic= require('./leagueLogic')(pool)
+	userLogic = require('./userLogic')(pool);
+	seriesLogic = require('./seriesLogic')(pool);
+	leagueLogic= require('./leagueLogic')(pool);
 
 	app.get('/', function(req, res){
+		if(req.isAuthenticated())return res.redirect('/home');
 		res.render('index.ejs')
 	})
 
@@ -24,7 +25,7 @@ module.exports = function(app, passport, pool){
 	})
 
 	app.get('/addUser', isAdmin, function(req, res){
-		flashMessage = (req.flash('flashMessage')[0]);
+		var flashMessage = (req.flash('flashMessage')[0]);
 		res.render('addUser.ejs', {user: req.user, message: flashMessage})
 	})
 
@@ -38,7 +39,7 @@ module.exports = function(app, passport, pool){
 	})
 
 	app.get('/createLeague', isLoggedIn, function(req, res){
-		flashMessage = (req.flash('flashMessage')[0]);
+		var flashMessage = (req.flash('flashMessage')[0]);
 		seriesLogic.getPlayableSeries(function(error, results){
 			if(error)throw error;
 			res.render('./createLeague.ejs', {user: req.user, message: flashMessage, series: results})
@@ -54,7 +55,7 @@ module.exports = function(app, passport, pool){
 	})
 
 	app.get('/addPlayableSeries', isAdmin, function(req, res){
-		flashMessage = (req.flash('flashMessage')[0]);
+		var flashMessage = (req.flash('flashMessage')[0]);
 		seriesLogic.getUnplayableSeries(function(error, results){
 			if(error)res.send(error);
 			res.render('addPlayableSeries.ejs', {user: req.user, message: flashMessage, series: results})
@@ -79,16 +80,26 @@ module.exports = function(app, passport, pool){
 	})
 
 	app.get('/userLeagues', isLoggedIn, function(req, res){
-		flashMessage = (req.flash('flashMessage')[0]);
+		var flashMessage = (req.flash('flashMessage')[0]);
 		leagueLogic.getUserLeagues(req.user, function(error, results){
 			if(error)return res.send(error);
-			console.log(results)
 			return res.render('userLeagues.ejs', {user: req.user, message: flashMessage, userLeagues: results})
 		})
 	})
 
 	app.get('/leaguePage', isLoggedIn, function(req, res){
-		res.render('leaguePage.ejs', {user: req.user});
+		var leagueId = req.query.leagueId;
+		legueInfoPromise = leagueLogic.getLeagueInfoPromise(leagueId);
+		leagueTeamsPromise = leagueLogic.getLeagueTeamsPromise(leagueId);
+		promises = [legueInfoPromise, leagueTeamsPromise];
+		Promise.all(promises).then(function(values){
+			res.render('leaguePage.ejs', {user: req.user, leagueInfo: values[0][0], leagueTeams: values[1]});
+		})
+	})
+
+	app.get('/auctionRoom', isLoggedIn, function(req, res){
+		var leagueId = req.query.leagueId;
+		res.render('auctionRoom.ejs', {user: req.user});
 	})
 }
 
@@ -100,5 +111,5 @@ function isLoggedIn(req, res, next){
 function isAdmin(req, res, next){
 	if(req.isAuthenticated() && req.user.Admin==1)return next();
 	else if(req.isAuthenticated())res.redirect('/unauthorizedUser');
-	else res.redirect('/')
+	else res.redirect('/');
 }

@@ -3,3 +3,4 @@ config/auth.js
 promisesTesting.js
 cricApiTesting.js
 sqlSetup.js
+jstesting.js

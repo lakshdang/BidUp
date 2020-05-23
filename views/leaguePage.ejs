@@ -2,9 +2,10 @@
 <!doctype html>
 <html>
 	<head>
-		<title>Create New League</title>
+		<title>View League</title>
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+		<script src="/socket.io/socket.io.js"></script>
 		<style>
 			body 		{ padding-top:80px; word-wrap:break-word; }
 		</style>
@@ -15,13 +16,23 @@
 				<%- include ('navbar.ejs') %>
 			</header>
 			<div class="row">
-				<!-- User Info -->
+				<div class="row"></div>
 				<div class="col-sm-12 well">
+					<% 	
+						var auctionRoomLink = "auctionRoom?leagueId=" + leagueInfo['LeagueID'];
+						if(user.UserID==leagueInfo.LeagueAdminUserID && leagueInfo.leagueTeamsSet<2){
+					%>
+						<button id="startAuction"><a href="<%= auctionRoomLink %>">Start/Resume League Auction</a></button>
+					<% 
+						} 
+						else if(leagueInfo.leagueTeamsSet==2){
+					%>
+						<button id="joinAuction"><a href="<%= auctionRoomLink %>">Join League Auction</a></button>
+					<% }%>
 				</div>
 			</div>
 		</div>
 		<script type="text/javascript">
-
 		</script>
 	</body>
 </html>

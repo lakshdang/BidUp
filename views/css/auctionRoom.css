@@ -1,0 +1,91 @@
+.connectedUsersDisplay{
+	border: 3px solid black;
+	padding: 5px;
+	height: 150px;
+	width: 200px;
+	overflow-y: scroll;
+}
+
+.connectedUserRow{
+	border: 1px solid grey;
+	padding: 2px;
+	height: 25px;
+}
+
+.connectedUsersHeader{
+	font-weight: bold;
+}
+
+#chatContainer{
+	padding: 10px;
+}
+
+#auctionArea{
+	width: 600px;
+	height: 300px;
+	border: 3px solid grey;
+	margin: 10px;
+}
+
+#leagueSquadsContainer{
+	margin: 10px;
+	width: inherit;
+	height: 200px;
+	overflow-x: scroll;
+}
+
+.userSquad{
+	border: 1px solid grey;
+	/*width: 250px;*/
+	height: 150px;
+	overflow-x: scroll;
+	margin: 5px;
+	padding: 5px;
+}
+
+.playerRow{
+	border: 1px;
+	margin: 2px;
+	padding: 1px;
+	height: 25px;
+	align-content: center;
+}
+
+.playerType, .playerName, .playerTeam{
+	height: inherit;
+	align-content: center;
+}
+
+.playerTeam{
+	padding: auto;
+	padding-bottom: 2px;
+	width: auto;
+}
+
+#chatArea{
+	margin: 5px;
+	height: auto;
+	border: 2px solid grey;
+}
+
+#chatMessages{
+	height: 350px;
+	margin: 5px;
+	border: 2px solid black;
+	overflow: scroll;
+	padding: 3px;
+}
+
+#enterMessage{
+	height: 50px;
+	margin: 5px;
+	border: 2px solid black;	
+}
+
+#userMessage, #sendMessage{
+	height: 100%;
+}
+
+.selfMessageRow{
+	text-align: right;
+}

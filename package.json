@@ -25,6 +25,7 @@
     "cricapi": "^1.2.9",
     "ejs": "latest",
     "express": "latest",
+    "express-mysql-session": "^2.1.4",
     "express-session": "latest",
     "morgan": "latest",
     "mysql": "^2.18.1",

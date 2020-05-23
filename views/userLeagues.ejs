@@ -2,7 +2,7 @@
 <!doctype html>
 <html>
 	<head>
-		<title>Create New League</title>
+		<title>My Leagues</title>
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
 		<style>
@@ -29,10 +29,10 @@
 						</tr>
 						<% for (var i=0; i < userLeagues.length; i++){ %>
 							<tr>
-								<td> <%= userLeagues[i]['LeagueName'] %> </td>
+								<td> <a href="/leaguePage?leagueId=<%=userLeagues[i]['LeagueID'] %>"><%= userLeagues[i]['LeagueName'] %></a></td>
 								<td> <%= userLeagues[i]['SeriesName'] %> </td>
 								<% if(userLeagues[i]['LeagueAdminUserID'] == user['UserID']){ %>
-									<td>Edit League</td>
+									<td>Admin Action</td>
 								<% } %>
 							</tr>
 						<% } %>

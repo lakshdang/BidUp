@@ -1,0 +1,101 @@
+<!-- views/pages/index.ejs -->
+<!doctype html>
+<html>
+	<head>
+		<title>BidUp</title>
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+		<script src="/socket.io/socket.io.js"></script>
+		<link rel="stylesheet" type="text/css" href="/css/auctionRoom.css">
+	</head>
+	<body>
+		<div class="container">
+			<header>
+			    <%- include ('navbar.ejs') %>
+			</header>
+			<div id="pageContainer">
+				<div class="col-sm-9">
+					<div id="auctionRoomContainer">
+						<div id="auctionArea">
+							Auction Area To Be Implemented
+						</div>
+						<div id="leagueSquadsContainer">
+						</div>
+					</div>
+				</div>
+				<div id="chatContainer" class="col-sm-3">
+					<div id="connectedUsersContainer">
+					</div>
+					<div id="chatArea">
+						<div id="chatMessages">
+							
+						</div>
+						<div id="enterMessage">
+							<textarea name="userMessage" id="userMessage" class="col-sm-9"></textarea>
+							<button name="sendMessage" id="sendMessage" class="col-sm-3">Send</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="/Viewsjs/auctionRoomDisplay.js"></script>
+		<script>
+			var url = new URL(window.location.href);
+			var leagueId = url.searchParams.get("leagueId");
+			const socket = io('/auctionRoom');
+			var connectedUsers, isAuctionOpen, leagueSquadsAndPlayers;
+
+			socket.on('connect', function(){
+				// socket.emit("joinOrStartAuction", {"leagueId": leagueId}, function(responseData){
+				// 	leagueSquadsAndPlayers = responseData['leagueSquadsAndPlayers'];
+				// 	isAuctionOpen = responseData['auctionOpen'];
+				// 	connectedUsers = responseData['usersInRoom'];
+				// 	initChatDisplay();
+				// 	displayLeagueSqauds();
+				// })
+				socket.emit("joinOrOpenAuctionRoom", {"leagueId": leagueId}, function(responseData){
+					console.log(responseData);
+				})
+			});
+
+			socket.on('disconnect', function(reason) {
+				console.log(reason);
+				console.log('disconnected from server.');
+			});
+
+			socket.on("newLogin", function(data){
+				console.log(data.message);
+			})
+
+			socket.on("leagueAdminJoined", function(){
+				console.log("League Admin Joined");
+			})
+
+			socket.on("userJoined", function(data){
+				newUserConnect(data);
+			})
+
+			socket.on("userDisconnect", function(data){
+				userDisconnect(data);
+			})
+
+			socket.on("adminDisconnect", function(data){
+
+			})
+
+			socket.on("newUserMessage", function(data){
+				addNewUserMessage(data);
+			})
+
+			document.getElementById("sendMessage").addEventListener("click", function(){sendChatMessage()})
+
+			function sendChatMessage(){
+				var userMessage = document.getElementById("userMessage").value.trim();
+				document.getElementById("userMessage").value = "";
+				if(userMessage.length==0)return;
+				socket.emit("sendUserMessage", {"message": userMessage})
+				showSentMessage(userMessage);
+			}
+		</script>
+	</body>
+</html>
