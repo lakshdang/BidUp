@@ -5,6 +5,7 @@
 		<title>Create New League</title>
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 		<style>
 			body 		{ padding-top:80px; word-wrap:break-word; }
 		</style>
@@ -16,14 +17,11 @@
 			</header>
 			<div class="row">
 				<!-- User Info -->
-				<div class="col-sm-4 well">
+				<div class="col-sm-4 well" id="createNewLeagueContainer">
 					<!-- show any messages -->
 					<h3>Create a new League</h3>
-					<% if (message != undefined) { %>
-						<div class="alert alert-danger"><%= message %></div>
-					<% } %>
 
-					<form  method="post" action="/createLeague">
+					<div id="createLeagueForm">
 						<select id="series" name="series" required>
 							<option disabled selected value> -- Select Series -- </option>
 							<% for(var i=0; i < series.length; i++) { %>
@@ -41,30 +39,30 @@
 
 						Min WicketKeepers: <input type="number" name="minWicketKeep" id="minWicketKeep" placeholder="0" step="1" min="0" required><br>
 
-						<input type="submit" onclick="return validateNewLeagueForm()">
-					</form>
+						<button id="newLeagueFormSubmit">Submit</button>
+					</div>
 				</div>
 				<div class="col-sm-4 well">
 					<h2 class="text-center"> OR </h2>
 				</div>
-				<div class="col-sm-4 well">
+				<div id="joinLeagueContainer" class="col-sm-4 well">
 					<h3>Join a League</h3>
-					<form method="post" action="/joinLeague">
+					<div id="joinLeagueForm">
 						Enter League Id: <input type="number" name="leagueId" id="leagueId" placeholder="0" step="1" min="1" required><br>
-						<input type="submit" onclick="return validateJoinLeagueForm()">
-					</form>
+						<button id="joinLeagueFormSubmit">Join League</button>
+					</div>
 				</div>
 			</div>
 		</div>
 		<script type="text/javascript">
 			function validateNewLeagueForm(){
-				series = document.getElementById("series")
-				leagueName = document.getElementById("leagueName")
-				maxUsers = document.getElementById("maxUsers")
-				maxPlayers = document.getElementById("maxPlayers")
-				squadBudget = document.getElementById("squadBudget")
-				minBowler = document.getElementById("minBowler")
-				minWicketKeep = document.getElementById("minWicketKeep")
+				var series = document.getElementById("series")
+				var leagueName = document.getElementById("leagueName")
+				var maxUsers = document.getElementById("maxUsers")
+				var numPlayers = document.getElementById("numPlayers")
+				var squadBudget = document.getElementById("squadBudget")
+				var minBowler = document.getElementById("minBowler")
+				var minWicketKeep = document.getElementById("minWicketKeep")
 				errors = []
 				if(series.value=="")errors.push("Please Select a Series");
 				if(leagueName.value.trim().length<5 || leagueName.value.trim().length >30){
@@ -95,6 +93,80 @@
 			function isNormalInteger(str){
 				var n = Math.floor(Number(str));
 				return n !== Infinity && String(n) === str && n >= 0;
+			}
+
+			document.getElementById("newLeagueFormSubmit").addEventListener("click", function(event){
+				event.preventDefault();
+				if(!validateNewLeagueForm())return;
+				var formData = createFormDataObject();
+				postRequest('/createLeague', formData, function(error, response){
+					if(error)return alert(error);
+					var createNewLeagueContainer = document.getElementById("createNewLeagueContainer");
+					displayRequestResult(response.data, createNewLeagueContainer);
+				})
+			});
+
+			document.getElementById("joinLeagueFormSubmit").addEventListener("click", function(event){
+				if(!validateJoinLeagueForm())return;
+				var reqObj = {"leagueId": document.getElementById('leagueId').value};
+				postRequest('/joinLeague', reqObj, function(error, response){
+					if(error)alert(error);
+					var joinLeagueContainer = document.getElementById("joinLeagueContainer");
+					displayRequestResult(response.data, joinLeagueContainer);
+				})
+			})
+
+			function createFormDataObject(){
+				var series = document.getElementById("series").value;
+				var leagueName = document.getElementById("leagueName").value;
+				var maxUsers = document.getElementById("maxUsers").value;
+				var numPlayers = document.getElementById("numPlayers").value;
+				var squadBudget = document.getElementById("squadBudget").value;
+				var minBowler = document.getElementById("minBowler").value;
+				var minWicketKeep = document.getElementById("minWicketKeep").value;
+				var ret = {
+					"series": series,
+					"leagueName": leagueName,
+					"maxUsers": maxUsers,
+					"numPlayers": numPlayers,
+					"squadBudget": squadBudget,
+					"minBowler": minBowler,
+					"minWicketKeep": minWicketKeep
+				}
+				return ret;
+			}
+
+			function getRequest(path, callback){
+				axios.get(path)
+				.then((response)=>{
+					callback(null, response)
+				})
+				.catch((error)=>{
+					callback(error, null)
+				})
+			}
+
+			function postRequest(path, data, callback){
+				axios.post(path, data)
+				.then((response)=>{
+					callback(null, response)
+				})
+				.catch((error)=>{
+					callback(error, null)
+				})
+			}
+
+			function displayRequestResult(response, parentElement){
+				var requestResultDisplay = document.createElement("div");
+				if(response.hasOwnProperty("error")){
+					requestResultDisplay.style.color = 'red';
+					requestResultDisplay.innerText = response['error'];
+				}
+				else{
+					requestResultDisplay.style.color = 'green';
+					requestResultDisplay.innerText = response['success'];
+				}
+				parentElement.insertBefore(requestResultDisplay, parentElement.firstChild);
 			}
 		</script>
 	</body>

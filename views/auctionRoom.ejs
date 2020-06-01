@@ -6,6 +6,8 @@
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
 		<script src="/socket.io/socket.io.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="/css/auctionRoom.css">
 	</head>
 	<body>
@@ -16,9 +18,6 @@
 			<div id="pageContainer">
 				<div class="col-sm-9">
 					<div id="auctionRoomContainer">
-						<div id="auctionArea">
-							Auction Area To Be Implemented
-						</div>
 						<div id="leagueSquadsContainer">
 						</div>
 					</div>
@@ -43,18 +42,14 @@
 			var url = new URL(window.location.href);
 			var leagueId = url.searchParams.get("leagueId");
 			const socket = io('/auctionRoom');
-			var connectedUsers, isAuctionOpen, leagueSquadsAndPlayers;
-
+			var auctionData = null;
 			socket.on('connect', function(){
-				// socket.emit("joinOrStartAuction", {"leagueId": leagueId}, function(responseData){
-				// 	leagueSquadsAndPlayers = responseData['leagueSquadsAndPlayers'];
-				// 	isAuctionOpen = responseData['auctionOpen'];
-				// 	connectedUsers = responseData['usersInRoom'];
-				// 	initChatDisplay();
-				// 	displayLeagueSqauds();
-				// })
 				socket.emit("joinOrOpenAuctionRoom", {"leagueId": leagueId}, function(responseData){
-					console.log(responseData);
+					auctionData = responseData;
+					console.log(auctionData);
+					initChatDisplay();
+					initAuctionDisplay();
+					displayLeagueSquads();
 				})
 			});
 
@@ -72,19 +67,48 @@
 			})
 
 			socket.on("userJoined", function(data){
+				console.log("User Joined: " + data)
+				if(auctionData.leagueAdminId==data.UserID)console.log("League Admin Joined");
 				newUserConnect(data);
 			})
 
 			socket.on("userDisconnect", function(data){
+				if(auctionData.leagueAdminId==data.UserID)console.log("League Admin Disconected");
 				userDisconnect(data);
 			})
 
-			socket.on("adminDisconnect", function(data){
-
+			socket.on("auctionStatusUpdate", function(data){
+				if(data.auctionLive == auctionData.auctionLive)return;
+				auctionData.auctionLive = data.auctionLive;
+				if(!auctionData.auctionLive){
+					auctionData.currPlayerOnAuction = null;
+					auctionData.currPlayerMaxBid = null;
+					auctionData.currWinningBid = null;
+				}
+				auctionStateUpdateDisplay();
+				displayPlayerAuctionInfoAndOptions();
 			})
 
 			socket.on("newUserMessage", function(data){
 				addNewUserMessage(data);
+			})
+
+			socket.on("multipleLogins", function(data){
+				console.log("New Login Detected")
+			})
+
+			socket.on("newPlayerAuction", function(data){
+				auctionData.currPlayerOnAuction = data['playerId'];
+				auctionData.currPlayerMaxBid = 0;
+				displayPlayerAuctionInfoAndOptions();
+			})
+
+			socket.on("newMaxPlayerBid", function(data){
+				newMaxBidUpdateDataAndDisplay(data);
+			})
+
+			socket.on("playerSold", function(data){
+				console.log(data);
 			})
 
 			document.getElementById("sendMessage").addEventListener("click", function(){sendChatMessage()})

@@ -29,7 +29,7 @@
 						</tr>
 						<% for (var i=0; i < userLeagues.length; i++){ %>
 							<tr>
-								<td> <a href="/leaguePage?leagueId=<%=userLeagues[i]['LeagueID'] %>"><%= userLeagues[i]['LeagueName'] %></a></td>
+								<td> <a href="/auctionRoom?leagueId=<%=userLeagues[i]['LeagueID'] %>"><%= userLeagues[i]['LeagueName'] %></a></td>
 								<td> <%= userLeagues[i]['SeriesName'] %> </td>
 								<% if(userLeagues[i]['LeagueAdminUserID'] == user['UserID']){ %>
 									<td>Admin Action</td>

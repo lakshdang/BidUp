@@ -24,6 +24,15 @@ module.exports = function(pool){
 			}).catch((error)=>{
 				return callback(error)
 			})
+		},
+
+		getSeriesSquadsPromise: function(seriesId){
+			return new Promise(function(resolve, reject){
+				pool.query(getSeriesSquadQueryString, [seriesId], function(error, results){
+					if(error)return reject(new Error("Backend Error"));
+					return resolve(results);
+				})
+			})
 		}
 	}
 }
@@ -33,3 +42,7 @@ function addSeriesTeams(seriesTeamsPairs, callback){
 		if(error)return callback(error)
 	})
 }
+
+var getSeriesSquadQueryString = `
+SELECT * FROM SeriesSquadsInfo WHERE SeriesID = ?;
+`;

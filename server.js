@@ -34,6 +34,7 @@ app.use(passport.initialize());
 app.use(passport.session());// persistent login sessions
 app.use(flash());// use connect-flash for flash messages stored in session
 app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
 app.set('view engine', 'ejs');
 
 // io.use(function(socket, next){expressSessionObj(socket.request, {}, next);})

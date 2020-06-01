@@ -8,11 +8,17 @@ module.exports = function(pool){
 			insertVals = [leagueAdminData['UserID'], leagueData['series'], leagueData['maxUsers'], leagueData['squadBudget'], leagueData['numPlayers'], leagueData['minBowler'], leagueData['minWicketKeep'], leagueData['leagueName']]
 			leagueName = leagueData['leagueName'].trim().toLowerCase()
 			pool.query('SELECT LeagueName FROM Leagues Where LOWER(LeagueName)=?', [leagueName], function(error, results, fields){
-				if(error)return callback(error);
-				if(results.length>0)return callback(null, false);
+				if(error){return callback(error);}
+				console.log(results);
+				if(results.length>0){return callback(null, false);}
+				console.log("After return statement");
 				pool.query('INSERT INTO Leagues(LeagueAdminUserID, SeriesID, MaxUserTeams, TeamBudget, NumPlayers, MinBowler, MinWicketKeep, LeagueName) VALUES (?); SELECT * FROM Leagues Where LOWER(LeagueName)=?',[insertVals, leagueName], function(error, results, fields){
-					if(error)returnk
-					return joinLeague(pool, {"leagueId": results[1][0]['LeagueID']}, leagueAdminData, callback)
+					if(error){return callback(error);}
+					console.log(results[1]);
+					joinLeague(pool, {"leagueId": results[1][0]['LeagueID']}, leagueAdminData, function(error, leagueJoied){
+						if(error){return callback(error);}
+						return callback(null, results[1]);
+					})
 				})
 			})
 		},
@@ -41,6 +47,7 @@ module.exports = function(pool){
 			return new Promise(function(resolve, reject){
 				pool.query(getLeagueTeamsQueryString, [leagueId], function(error, results){
 					if(error)return reject(error);
+					console.log(results);
 					resolve(results);
 				})
 			})
@@ -73,27 +80,27 @@ module.exports = function(pool){
 			})
 		},
 
-		getLeagueSquadsPromise(leagueId){
+		getLeagueSquadsAndPlayersPromise: function(leagueId){
 			return new Promise(function(resolve, reject){
-				pool.query(getLeagueSquadsQueryString, [leagueId], function(error, results){
-					if(error)return reject(error);
+				pool.query(getLeagueSquadsAndPlayersQueryString, [leagueId, leagueId], function(error, results){
+					if(error)return reject(new Error("Backend Error"));
 					return resolve(results);
 				})
 			})
 		},
 
-		getLeagueSqaudsAndPlayersPromise: function(leagueId){
+		getLeagueSquadsPromise: function(leagueId){
 			return new Promise(function(resolve, reject){
-				pool.query(getLeagueSqaudsAndPlayersQueryString, [leagueId, leagueId], function(error, results){
+				pool.query(getLeagueSquadsQueryString, [leagueId], function(error, results){
 					if(error)return reject(new Error("Backend Error"));
-					return resolve({"leagueSquadsAndPlayers": results});
+					return resolve(results);
 				})
 			})
 		},
 
 		getUserLeagueTeamsPromise: function(leagueId){
 			return new Promise(function(resolve, reject){
-				pool.query(getUserLeagueTeamsPromiseQueryString, [leagueId], function(error, results){
+				pool.query(getUserLeagueTeamsQueryString, [leagueId], function(error, results){
 					if(error){
 						console.log(error);
 						return reject(new Error("Backend Error"));
@@ -101,14 +108,27 @@ module.exports = function(pool){
 					return resolve(results);
 				})
 			})
+		},
+
+		recordPlayerPurchasePromise: function(leagueTeamId, playerId, purchaseAmount){
+			console.log("Inside recordPlayerPurchasePromise function");
+			return new Promise(function(resolve, reject){
+				var vals = [leagueTeamId, playerId, purchaseAmount];
+				pool.query(recordPlayerPurchaseQueryString, [vals], function(error, results){
+					if(error)console.log(error);
+					if(error)return reject (new Error("Backend Error"));
+					else resolve(results)
+				})
+			})
 		}
 	}
 }
 
 function joinLeague(pool, leagueIdData, userData, callback){
-	pool.query('SELECT LeagueTeamOwner FROM LeagueTeams WHERE LeagueID=?', [leagueIdData['leagueId']], function(error, results, fields){
+	pool.query('SELECT * FROM Leagues WHERE LeagueID = ?; SELECT LeagueTeamOwner FROM LeagueTeams WHERE LeagueID=?', [leagueIdData['leagueId'], leagueIdData['leagueId']], function(error, results, fields){
 		if(error)return callback(error);
-		if(results.find(obj => {return obj.LeagueTeamOwner == userData.UserID}) != undefined)
+		if(results[0].length==0)return callback(null, false);
+		if(results[1].find(obj => {return obj.LeagueTeamOwner == userData.UserID}) != undefined)
 			return callback(null, false)
 		pool.query('INSERT INTO LeagueTeams(LeagueTeamOwner, LeagueID) VALUES (?)', [[userData['UserID'], leagueIdData['leagueId']]], function(error, results, fields){
 			if(error)return callback(error);
@@ -155,18 +175,24 @@ startOrResumeTeamAuctionQueryString = `
 UPDATE Leagues SET LeagueTeamsSet = 2 WHERE LeagueID = ?;
 `;
 
-var getLeagueSquadsQueryString = `
-Select * From LeagueTeams Where LeagueID = ?;
-`;
-
 var pauseLeagueAuctionQueryString = `
 UPDATE Leagues SET LeagueTeamsSet = 1 WHERE LeagueID = ?;
 `;
 
-var getLeagueSqaudsAndPlayersQueryString = `
-SELECT * FROM AuctionLeagueTeamPlayerData WHERE LeagueID=? OR SeriesID=(Select SeriesID FROM Leagues WHERE Leagues.LeagueID=?);
+var getLeagueSquadsAndPlayersQueryString = `
+SELECT * FROM AuctionLeagueTeamPlayerData WHERE (LeagueID=? OR SeriesID=(Select SeriesID FROM Leagues WHERE Leagues.LeagueID=?);
 `;
 
-var getUserLeagueTeamsPromiseQueryString = `
+var getUserLeagueTeamsQueryString = `
 SELECT * FROM LeagueTeams WHERE LeagueID = ?;
 `;
+
+var getLeagueSquadsQueryString = `
+SELECT * FROM AuctionLeagueTeamPlayerData
+WHERE LeagueID=?
+AND PlayerID IS NOT NULL AND LeagueTeamID IS NOT NULL;
+`;
+
+var recordPlayerPurchaseQueryString = `
+INSERT INTO LeagueSquads(LeagueTeamID, PlayerID, PurchaseAmount) VALUES (?);
+`

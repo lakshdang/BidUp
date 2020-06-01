@@ -10,6 +10,10 @@ module.exports = function(app, passport, pool){
 		res.render('index.ejs')
 	})
 
+	app.post('/test', isLoggedIn, function(req, res){
+		res.send("test request recieved");
+	})
+
 	app.get('/auth/google', passport.authenticate('google', {scope: ['profile', 'email']}));
 
 	app.get('/googleLoginSuccess', 
@@ -39,18 +43,23 @@ module.exports = function(app, passport, pool){
 	})
 
 	app.get('/createLeague', isLoggedIn, function(req, res){
-		var flashMessage = (req.flash('flashMessage')[0]);
 		seriesLogic.getPlayableSeries(function(error, results){
 			if(error)throw error;
-			res.render('./createLeague.ejs', {user: req.user, message: flashMessage, series: results})
+			res.render('./createLeague.ejs', {user: req.user, series: results})
 		})			
 	})
 
 	app.post('/createLeague', isLoggedIn, function(req, res){
+		console.log("create league post request recieved");
 		leagueLogic.createLeague(req.body, req.user, function(error, result){
-			if(error)return res.send(error);
-			req.flash('flashMessage', 'League created!')
-			res.redirect('/createLeague')
+			if(error){return res.send({"error":"Backend Error"});}
+			// console.log("After backend error");
+			if(result==false){return res.send({"error": "League Name taken"});}
+			// console.log("After league name taken error");
+			// console.log(result);
+			var successString = "League " + result[0].LeagueName + " successfully created with league id: " + result[0].LeagueID;
+			console.log(successString);
+			res.send({"success": successString});
 		})
 	})
 
@@ -64,10 +73,9 @@ module.exports = function(app, passport, pool){
 
 	app.post('/joinLeague', isLoggedIn, function(req, res){
 		leagueLogic.joinLeague(req.body, req.user, function(error, result){
-			if(error)res.send(error);
-			if(!result)req.flash('flashMessage', 'Cannot Join League');
-			else req.flash('flashMessage', 'League Joined');
-			res.redirect('/createLeague')
+			if(error)return res.send(error);
+			if(!result)return res.send({"error": "failed to join league"})
+			else res.send({"success": "League Joined"});
 		})	
 	})
 
