@@ -34,9 +34,9 @@ function initAuctionDisplay(){
 	auctionStateDisplay.setAttribute("id", "auctionStateDisplay");
 	auctionStateDisplay.innerText = auctionStatusDisplayString();
 	auctionArea.appendChild(auctionStateDisplay);
-		if(auctionData.isUserLeagueAdmin){
-		auctionArea.appendChild(displayLeagueAdminAuctionControls());
-	}
+	// if(auctionData.isUserLeagueAdmin){
+	// 	auctionArea.appendChild(displayLeagueAdminAuctionControls());
+	// }
 	var playerAuctionInfoAndOptions = document.createElement("div");
 	playerAuctionInfoAndOptions.setAttribute("id", "playerAuctionInfoAndOptions");
 	auctionArea.appendChild(playerAuctionInfoAndOptions);
@@ -163,6 +163,9 @@ function displayPlayerAuctionInfoAndOptions(){
 	var auctionArea = document.getElementById("auctionArea");
 	var playerAuctionInfoAndOptions = document.getElementById("playerAuctionInfoAndOptions");
 	while(playerAuctionInfoAndOptions.firstChild){playerAuctionInfoAndOptions.removeChild(playerAuctionInfoAndOptions.lastChild);}
+	if(auctionData.isUserLeagueAdmin){
+		auctionArea.appendChild(displayLeagueAdminAuctionControls());
+	}
 	// console.log(playerAuctionInfoAndOptions);
 	if(!auctionData.auctionLive){
 		// // while(playerAuctionInfoAndOptions.firstChild){playerAuctionInfoAndOptions.removeChild(playerAuctionInfoAndOptions.lastChild);}
@@ -237,13 +240,16 @@ function displayLeagueSquads(){
 	while(leagueSquadsContainer.firstChild){leagueSquadsContainer.removeChild(leagueSquadsContainer.lastChild);}
 	var leagueSquads = auctionData.leagueSquads;
 	for(var key in leagueSquads){
-		displayUserSquad(leagueSquads[key].Squad);
+		displayUserSquad(key, leagueSquads[key].Squad);
 	}
 }
 
-function displayUserSquad(userSquad){
+function displayUserSquad(userId, userSquad){
+	console.log("Printing user Squad");
+	console.log(userSquad);
 	var leagueSquadsContainer = document.getElementById("leagueSquadsContainer");
 	var userSquadDiv = document.createElement("span");
+	userSquadDiv.setAttribute("id", "UserSquad_"+userId);
 	userSquadDiv.classList.add("userSquad", "col-sm-5");
 	if(userSquad.length==0){
 		userSquadDiv.innerText = "No players purchased yet";
@@ -272,6 +278,11 @@ function createPlayerRow(player){
 	playerRow.appendChild(playerType);
 	playerRow.appendChild(playerTeam);
 	return playerRow;
+}
+
+function playerSoldUpdateDisplay(saleData){
+	var userSquadDiv = document.getElementById("UserSquad_"+saleData['LeagueTeamOwner']);
+	userSquadDiv.appendChild(createPlayerRow(saleData));
 }
 
 function auctionStatusDisplayString(){

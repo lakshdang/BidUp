@@ -108,7 +108,15 @@
 			})
 
 			socket.on("playerSold", function(data){
-				console.log(data);
+				// console.log(data);
+				auctionData.currPlayerOnAuction = null;
+				auctionData.currPlayerMaxBid = null;
+				auctionData.currWinningBid = null;
+				auctionData.leagueSquads[data.LeagueTeamOwner].Squad.push(data);
+				alert("player sold");
+				console.log(auctionData.leagueSquads);
+				displayPlayerAuctionInfoAndOptions();
+				playerSoldUpdateDisplay(data);
 			})
 
 			document.getElementById("sendMessage").addEventListener("click", function(){sendChatMessage()})

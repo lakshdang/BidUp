@@ -9,9 +9,9 @@ module.exports = function(io, pool){
 	var auctionRooms = require('./auctionRooms')(pool, em);
 
 	em.on("playerBought", function eventHandler(data){
-		console.log(data);
+		// console.log(data);
 		// auctionRoomNsp.sockets.in(data.leagueId).emit('playerSold', data);
-		auctionRoomNsp.to(data.leagueId).emit('playerSold', data);
+		auctionRoomNsp.to(data.LeagueID).emit('playerSold', data);
 	})
 
 	auctionRoomNsp.on("connection", function(socket){

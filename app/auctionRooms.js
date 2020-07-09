@@ -165,6 +165,7 @@ function getSeriesSquad(seriesId){
 			}).catch(function(error){
 				delete seriesSquadsMap[seriesId];
 				em.emit("SeriesSquadsSet", {"seriesId": seriesId, "success": false})
+				console.log(error);
 				return reject(new Error("Backend Error"));
 			})
 		}
@@ -176,12 +177,11 @@ function setSeriesSquadObject(seriesSquads){
 	seriesSquads.forEach(function(player){
 		ret[player['PlayerID']] = player;
 	})
+	console.log(util.inspect(ret, false, null, true /* enable colors */));
 	return ret;
 }
 
 function setLeagueSquads(leagueSquads, leagueTeams){
-	console.log(leagueTeams);
-	console.log(leagueSquads);
 	var ret = {};
 	var teamToUserMap = {};
 	leagueTeams.forEach(function(team){
@@ -195,7 +195,7 @@ function setLeagueSquads(leagueSquads, leagueTeams){
 		// console.log(player);
 		ret[teamToUserMap[player['LeagueTeamID']]]['Squad'].push(player)
 	})
-	// console.log(util.inspect(ret, false, null, true /* enable colors */));
+	console.log(util.inspect(ret, false, null, true /* enable colors */));
 	return ret;
 }
 
@@ -210,6 +210,7 @@ function setUsedPlayers(leagueSquads){
 
 class AuctionRoom{
 	constructor(leagueInfo, openUser, leagueTeams, leagueSquads){
+		// console.log(leagueTeams)
 		this.leagueSquads = setLeagueSquads(leagueSquads, leagueTeams);
 		this.usedPlayers = setUsedPlayers(leagueSquads);
 		this.leagueTeams  = leagueTeams;
@@ -321,19 +322,32 @@ class AuctionRoom{
 			currAuction.currPlayerMaxBid = bidAmount;
 			if(currAuction.currWinningBid!=null)clearTimeout(currAuction.currWinningBid)
 			currAuction.currWinningBid = setTimeout(function(){
-				var retObj = {
-					"leagueId": currAuction.leagueInfo.LeagueID, 
-					"playerId": currAuction.currPlayerOnAuction,
-					"winningUser": user.UserID,
-					"bidAmount": bidAmount
-				}
+				// var retObj = {
+				// 	"leagueId": currAuction.leagueInfo.LeagueID, 
+				// 	"playerId": currAuction.currPlayerOnAuction,
+				// 	"winningUser": user.UserID,
+				// 	"bidAmount": bidAmount
+				// }
 				var leagueTeamId = currAuction.leagueSquads[user.UserID].LeagueTeamID;
 				var recordPlayerPurchasePromise = leagueLogic.recordPlayerPurchasePromise(leagueTeamId, playerId, bidAmount);
 				recordPlayerPurchasePromise.then(function(result){
 					currAuction.currPlayerOnAuction = null;
 					currAuction.currPlayerMaxBid = null;
 					currAuction.currWinningBid = null;
-					em.emit("playerBought", retObj)
+					var seriesSquadPromise = getSeriesSquad(currAuction.leagueInfo.SeriesID);
+					seriesSquadPromise.then(function(result){
+						var playerInfo = result[playerId];
+						var remInfoObj = {
+							"LeagueTeamID": currAuction.leagueSquads[user.UserID].LeagueTeamID,
+							"LeagueTeamOwner": user.UserID,
+							"LeagueID": currAuction.leagueInfo.LeagueID
+						}
+						var retObj = Object.assign(playerInfo, remInfoObj);
+						currAuction.leagueSquads[user.UserID].Squad.push(retObj);
+						console.log(util.inspect(currAuction.leagueSquads, false, null, true /* enable colors */));
+						em.emit("playerBought", retObj);
+					}).catch(function(error){console.log(error)})
+
 				}).catch(function(error){console.log(error)});
 			}, currAuction.bidTime);
 			return resolve({"newMaxBidAmount": bidAmount, "maxBidUser": user});
